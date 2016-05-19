@@ -1,6 +1,7 @@
 # 1001000.io
 import RPi.GPIO as GPIO
 import time
+import inspect
 import readchar
 
 Motor_R1_Pin = 16
@@ -13,118 +14,145 @@ GPIO.setup(Motor_R2_Pin, GPIO.OUT, initial=GPIO.LOW)
 GPIO.setup(Motor_L1_Pin, GPIO.OUT, initial=GPIO.LOW)
 GPIO.setup(Motor_L2_Pin, GPIO.OUT, initial=GPIO.LOW)
 
-#move1/9
+#1/9
 def stop():
     GPIO.output(Motor_R1_Pin, False)
     GPIO.output(Motor_R2_Pin, False)
     GPIO.output(Motor_L1_Pin, False)
     GPIO.output(Motor_L2_Pin, False)
-#move2/9
-def forward():
+#2/9
+def forward(seconds):
     #if Motor_R2_Pin or Motor_L2_Pin: stop()
     GPIO.output(Motor_R1_Pin, True)
     GPIO.output(Motor_R2_Pin, False)
     GPIO.output(Motor_L1_Pin, True)
     GPIO.output(Motor_L2_Pin, False)
-#move3/9
-def forward_R():
+    time.sleep(seconds)
+    stop()
+    return inspect.stack()[0][3]
+#3/9
+def turn_R(seconds):
     #if Motor_L2_Pin: stop()
     GPIO.output(Motor_R1_Pin, False)
     GPIO.output(Motor_R2_Pin, False)
     GPIO.output(Motor_L1_Pin, True)
     GPIO.output(Motor_L2_Pin, False)
-#move4/9
-def forward_L():
+    time.sleep(seconds)
+    stop()
+    return inspect.stack()[0][3]
+#4/9
+def turn_L(seconds):
     #if Motor_R2_Pin: stop()
     GPIO.output(Motor_R1_Pin, True)
     GPIO.output(Motor_R2_Pin, False)
     GPIO.output(Motor_L1_Pin, False)
     GPIO.output(Motor_L2_Pin, False)
-#move5/9
-def backward():
+    time.sleep(seconds)
+    stop()
+    return inspect.stack()[0][3]
+#5/9
+def backward(seconds):
     #if Motor_R1_Pin or Motor_L1_Pin: stop()
     GPIO.output(Motor_R1_Pin, False)
     GPIO.output(Motor_R2_Pin, True)
     GPIO.output(Motor_L1_Pin, False)
     GPIO.output(Motor_L2_Pin, True)
-#move6/9
-def backward_R():
+    time.sleep(seconds)
+    stop()
+    return inspect.stack()[0][3]
+#6/9
+def back_R(seconds):
     #if Motor_L1_Pin: stop()
     GPIO.output(Motor_R1_Pin, False)
     GPIO.output(Motor_R2_Pin, False)
     GPIO.output(Motor_L1_Pin, False)
     GPIO.output(Motor_L2_Pin, True)
-#move7/9
-def backward_L():
+    time.sleep(seconds)
+    stop()
+    return inspect.stack()[0][3]
+#7/9
+def back_L(seconds):
     #if Motor_R1_Pin: stop()
     GPIO.output(Motor_R1_Pin, False)
     GPIO.output(Motor_R2_Pin, True)
     GPIO.output(Motor_L1_Pin, False)
     GPIO.output(Motor_L2_Pin, False)
-#move8/9
-def clockwise():
+    time.sleep(seconds)
+    stop()
+    return inspect.stack()[0][3]
+#8/9
+def spin_R(seconds):
     #if Motor_R1_Pin or Motor_L2_Pin: stop()
     GPIO.output(Motor_R1_Pin, False)
     GPIO.output(Motor_R2_Pin, True)
     GPIO.output(Motor_L1_Pin, True)
     GPIO.output(Motor_L2_Pin, False)
-#move9/9
-def counterclockwise():
+    time.sleep(seconds)
+    stop()
+    return inspect.stack()[0][3]
+#9/9
+def spin_L(seconds):
     #if Motor_R2_Pin or Motor_L1_Pin: stop()
     GPIO.output(Motor_R1_Pin, True)
     GPIO.output(Motor_R2_Pin, False)
     GPIO.output(Motor_L1_Pin, False)
     GPIO.output(Motor_L2_Pin, True)
+    time.sleep(seconds)
+    stop()
+    return inspect.stack()[0][3]
 
 U = '\x1b[A'
 D = '\x1b[B'
 R = '\x1b[C'
 L = '\x1b[D'
 
-pause = 0.4
-delay = 0.5
-
+keep_time = 0.5
+turn_time = 0.25
+spin_time = 2
+moving = 'forward'
 while True:
-    t1 = time.time()
     key = readchar.readkey()
-    t2 = time.time()
-    continued = True if t2-t1 < pause else False
-
-    if key == U:
-        forward()
-        motion = 'forward'
-
-    if key == D:
-        backward()
-        motion = 'backward'
-
+    if key == U: moving = forward(keep_time)
+    if key == D: moving = backward(keep_time)
     if key == R:
-        if continued:
-            if motion == 'forward':
-                forward_R()
-            elif motion == 'backward':
-                backward_R()
+        if moving in ['forward', 'turn_R', 'turn_L']:
+            if moving == 'turn_R':
+                count += 1
             else:
-                clockwise()
-        else:
-            clockwise()
-            motion = 'clockwise'
-
+                count = 0
+            moving = turn_R(turn_time)
+            if count > 5:
+                spin_R(spin_time)
+                count = 0
+        if moving in ['backward', 'back_R', 'back_L']:
+            if moving == 'back_R':
+                count += 1
+            else:
+                count = 0
+            moving = back_R(turn_time)
+            if count > 5:
+                spin_L(spin_time)
+                count = 0
     if key == L:
-        if continued:
-            if motion == 'forward':
-                forward_L()
-            elif motion == 'backward':
-                backward_L()
+        if moving in ['forward', 'turn_R', 'turn_L']:
+            if moving == 'turn_L':
+                count += 1
             else:
-                counterclockwise()
-        else:
-            counterclockwise()
-            motion = 'counterclockwise'
-
+                count = 0
+            moving = turn_L(turn_time)
+            if count > 5:
+                spin_L(spin_time)
+                count = 0
+        if moving in ['backward', 'back_R', 'back_L']:
+            if moving == 'back_L':
+                count += 1
+            else:
+                count = 0
+            moving = back_L(turn_time)
+            if count > 5:
+                spin_R(spin_time)
+                count = 0
     if key == ' ':
         break
-    time.sleep(delay)
-    stop()
 
 GPIO.cleanup()

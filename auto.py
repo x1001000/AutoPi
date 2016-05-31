@@ -24,7 +24,7 @@ def stop():
     GPIO.output(Motor_R2_Pin, False)
     GPIO.output(Motor_L1_Pin, False)
     GPIO.output(Motor_L2_Pin, False)
-    time.sleep(0.01)
+    #time.sleep(0.01)#for what?
 def forward(t):
     GPIO.output(Motor_R1_Pin, True)
     GPIO.output(Motor_R2_Pin, False)

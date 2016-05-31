@@ -2,10 +2,10 @@
 import RPi.GPIO as GPIO
 import time
 
-Motor_R1_Pin = 13
-Motor_R2_Pin = 11
-Motor_L1_Pin = 18
-Motor_L2_Pin = 16
+Motor_R1_Pin = 16
+Motor_R2_Pin = 18
+Motor_L1_Pin = 11
+Motor_L2_Pin = 13
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(Motor_R1_Pin, GPIO.OUT, initial=GPIO.LOW)
 GPIO.setup(Motor_R2_Pin, GPIO.OUT, initial=GPIO.LOW)
